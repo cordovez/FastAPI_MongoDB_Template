@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
-# from config.db import init_db
+from mongodb.db import init_db
 from routes.user_routes import user_route
 from routes.token_route import token_route
 
@@ -29,9 +29,9 @@ def root():
 app.include_router(user_route, prefix="/users", tags=["users"])
 app.include_router(token_route, tags=["token"])
 
-# @app.on_event("startup")
-# async def connect():
-#     await init_db()
+@app.on_event("startup")
+async def connect():
+    await init_db()
 
 
 if __name__ == "__main__":
