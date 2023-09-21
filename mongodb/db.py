@@ -14,7 +14,7 @@ env = dotenv_values(".env")
 async def init_db():
     client = motor.motor_asyncio.AsyncIOMotorClient(env["MONGO_URI"])
     await beanie.init_beanie(
-        database=client.People,
+        database=client[env["MONGO_DB"]],
         document_models=[UserBase ]
 
     )

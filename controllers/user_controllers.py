@@ -1,16 +1,16 @@
 from fastapi.encoders import jsonable_encoder
 from fastapi import HTTPException, status
 
-
-
 from models.user_model import UserIn, UserBase
+from models.message_models import Message
 from auth.password_hasher import get_password_hash
 
 async def create_user( user: UserIn):
-    """Creates a new user:
-    Verifies that neither email nor username already exist in db
-    Passes those params and password hash to a function add_params()
-    Saves the returned object from add_params() to the db
+    """This function verifies that neither the username nor email passed in as 
+    'user' parameters, exist in the database.
+    
+    if user doesn't already exist, it takes this information information and 
+    passes it to the to the add_params() function.
     """
 
     user_email = await UserBase.find_one({"email": user.email})
@@ -25,19 +25,21 @@ async def create_user( user: UserIn):
             status.HTTP_409_CONFLICT, detail="user with that username already exists"
         )
 
-    register_user = add_params( user)
+    with_added_information = add_params(user)
 
-    saved_user = await UserBase.create(register_user)
+    saved_user = await UserBase.create(with_added_information)
     return saved_user
 
 
 def add_params(user_in: UserIn):
-    """Adds the parameters passed to a user model:
-    Makes hash of the plain-text password
-    Turns the pydantic user_in into a dict(), without the password
-    adds email, username and a newly-created password_hash to a UserBase model. 
-    Creates a default avatar.
-    returns the model
+    """This function, takes the information passed in from 'create_user' and 
+    additionally generates:
+    • hashed_password
+    • uri to a generic avatar image
+    
+    It creates a user_dict excluding the password passed through 'UserIn' and 
+    register the new user.
+    
     """
     hashed_password = get_password_hash(user_in.password)
     user_dict = user_in.dict(exclude={"password"})
@@ -52,62 +54,54 @@ def add_params(user_in: UserIn):
         avatar=avatar_dict
     )
     return user
-
-
+  
 async def get_user(id: str):
-    user_data = await UserBase.get(id)
-    if not user_data:
+    """ function takes the MongoDB document _id as a string, to search database.
+    """
+    found = await UserBase.get(id)
+    if not found:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-    return user_data
+    return found
 
 
 async def get_users():
+    """ function returns all users in the database as a list.
+    """
     all_users = await UserBase.find().to_list()
     return all_users
 
 
-async def update_user_data( user, user_update_data):
+async def update_user_data( id, user_update_data):
     update_data = user_update_data.dict(exclude_unset=True)
-    found_user = await UserBase.get(user.id)
+    found_user = await UserBase.get(id)
+    
+    # duplicate_user =  found_user.copy(update=update_data, exclude={"_id"})
+    updated_user = await found_user.update({"$set": update_data})
+    
+    # # updated_item = user.copy(update=update_data, exclude={"id"})
+    # updated_to_json = jsonable_encoder(updated_user)
 
-    updated_user = found_user.copy(update=update_data, exclude={"id"})
-    # updated_item = user.copy(update=update_data, exclude={"id"})
-    updated_to_json = jsonable_encoder(updated_user)
+    # await found_user.set({**updated_to_json})
+    return found_user
 
-    await found_user.set({**updated_to_json})
-
-    return True
+    # return True
 
 
 async def delete_user_by_id(id: str):
-    found_user = await UserBase.get(id)
-    deleted = await found_user.delete()
-    if not deleted:
-        return False
+    """ function takes the MongoDB document _id as a string, to search database
+    for document and delete it.
+    """
+    success_message = Message(message="user deleted")
+    user_found = await UserBase.get(id)
+    
+    if user_found is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND)
+    await user_found.delete()
+    return success_message
+    
+    
 
-    return True
 
-
-# async def add_plant_to_user(public_id, url, user):
-#     """
-#     you may need to change the type of new_plant.id to a Link[PlantMongoDB] 
-#     object, which is a valid reference to a PlantMongoDB object in the UserBase 
-#     model. You can do this by using the Link function from the bson module to
-#     create a new Link object from the new_plant instance
-#     """
-#     file_info = {"public_id": public_id, "uri":url,}
-
-#     # Create new plant with the Plant model and pass values from the Cloudinary upload:
-#     new_plant = PlantMongoDB(images=[{**file_info}], owner=user.username)
-
-#     # insert the new plant to mongodb
-#     await new_plant.create()
-
-#     # add new plant to the current user
-#     user.plants.append(new_plant)
-
-#     await user.save()
-#     return user.plants
 
 async def add_avatar_image(user):
     # Upload to Cloudinary

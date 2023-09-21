@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Optional, Annotated
 
 from beanie import Document, Link
-from pydantic import BaseModel, EmailStr, Extra
+from pydantic import BaseModel, EmailStr, ConfigDict
 
 central_europe = pytz.timezone('Europe/Paris')
 
@@ -17,6 +17,8 @@ class ImageBase(BaseModel):
 
 class UserBase(Document):
     """User database representation"""
+    model_config = ConfigDict(extra='allow') 
+    
     first_name: Optional[str] | None = None
     last_name: Optional[str] | None = None
     created_at: Optional[datetime] = datetime.now(central_europe)
@@ -28,8 +30,6 @@ class UserBase(Document):
     class Settings:
         name = "Users"
         
-    class Config:
-        extra = Extra.allow
 
     
     
@@ -37,7 +37,6 @@ class UserIn(BaseModel):
     email: EmailStr
     username: str
     password: str
-    # avatar: Optional[ImageBase]
 
 
 class UserOut(BaseModel):
@@ -52,6 +51,8 @@ class UserOut(BaseModel):
 
 class UserUpdate(BaseModel):
     """User database representation"""
+    model_config = ConfigDict(extra='allow')
+    
     first_name: Optional[str] | None = None
     last_name: Optional[str] | None = None
     email: Optional[EmailStr] | None = None
