@@ -17,6 +17,12 @@ If you are in a hurry and know what you're doing:
 - run `python -m server` from your terminal
 - visit your localhost
 
-## The connection to the MongoDB
+## How this project is organised (for those who want to understand)
 
-## Understanding Beanie class objects
+### The connection to the MongoDB
+
+### Understanding the Models
+
+### Understanding FastAPI
+
+### Understanding Authentication
