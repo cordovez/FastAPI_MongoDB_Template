@@ -2,7 +2,7 @@
 User registration router
 """
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends 
 from typing import Annotated
 from fastapi.security import OAuth2PasswordBearer
 
@@ -43,7 +43,8 @@ async def read_all_users(current_user: Annotated[UserBase,
     return users_list
 
 @user_route.get("/{id}" ) 
-async def read_user_me(id, current_user: Annotated[UserBase, Depends(get_current_user)])-> UserBase:
+async def read_user_me(id, current_user: Annotated[UserBase, 
+                                                   Depends(get_current_user)])-> UserBase:
     """ Route takes an id and current_user as parameters.  Route requires
     ('Depends' on) the authorization 'get_current_user'. 
     
