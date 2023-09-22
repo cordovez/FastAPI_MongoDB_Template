@@ -7,7 +7,7 @@ from typing import Annotated
 from fastapi.security import OAuth2PasswordBearer
 
 from auth.current_user import get_current_user
-from models.user_model import UserBase, UserIn, UserUpdate
+from models.user_model import UserBase, UserIn, UserUpdate, UserOut
 from models.message_models import Message
 from controllers.user_controllers import (create_user, get_users, get_user,
                                           delete_user_by_id, update_user_data)
@@ -17,7 +17,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 user_route = APIRouter()
 # Create
 @user_route.post("/add")
-async def add_user_to_db( user: UserIn)-> UserBase:
+async def add_user_to_db( user: UserIn)-> UserOut:
     """To create a new user, you only need to pass in email, username, and
     password (model: UserIn).
     
@@ -26,7 +26,6 @@ async def add_user_to_db( user: UserIn)-> UserBase:
     
     Return is a database document (model: UserBase)
     """
-    
     new_user = await create_user(user)
     
     return new_user
