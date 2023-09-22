@@ -19,6 +19,7 @@ If you are in a hurry and know what you're doing:
 
 ## How this project is organised (for those who want to understand)
 
+<details>
 In general, the connection between [FastApi](https://fastapi.tiangolo.com/) and [MongoDB](https://www.mongodb.com/) is initiated with Motor, and the communication is facilitated by [Beanie](https://beanie-odm.dev/), an object-document mapper, which in turn inherits from [Pydantic](https://docs.pydantic.dev/latest/) for data validation.
 
 ### The connection to the MongoDB
@@ -172,3 +173,5 @@ python -m server
 ```
 
 ### Understanding Authentication
+
+</details>
