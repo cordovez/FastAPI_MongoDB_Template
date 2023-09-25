@@ -9,6 +9,7 @@ from fastapi.security import OAuth2PasswordBearer
 from auth.current_user import get_current_user
 from models.user_model import UserBase, UserIn, UserUpdate, UserOut
 from models.message_models import Message
+from models.thing_model import MyThing
 from controllers.user_controllers import (create_user, get_users, get_user,
                                           delete_user_by_id, update_user_data)
 
@@ -41,19 +42,26 @@ async def read_all_users(current_user: Annotated[UserBase,
 
     return users_list
 
-@user_route.get("/{id}" ) 
-async def read_user_me(id, current_user: Annotated[UserBase, 
-                                                   Depends(get_current_user)])-> UserBase:
+@user_route.get("/me" ) 
+async def read_user_me( current_user: Annotated[UserBase, 
+                                                   Depends(get_current_user)])-> UserOut:
     """ Route takes an id and current_user as parameters.  Route requires
     ('Depends' on) the authorization 'get_current_user'. 
     
     It searches for the id in the database and returns db document (model: UserBase)
     """
-    found = await get_user(id)
+    return current_user
+
+@user_route.get("/my_things")
+async def get_my_things(current_user: Annotated[UserBase, 
+                                                   Depends(get_current_user)]):
+#    list_of_things =[]
+#    for thing in current_user.things:
+#        found = await MyThing.find_all({thing.owner == current_user.username})
+#        await list_of_things.append(found.thing_name)
     
-    if not found:
-        return {'message': "user is not in database"}
-    return found
+   user = await UserBase.get(str(current_user.id), fetch_links=True)
+   return user.things    
 
 # Update
 @user_route.patch("/{id}/update")

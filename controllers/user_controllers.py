@@ -100,9 +100,6 @@ async def delete_user_by_id(id: str):
     return success_message
     
     
-
-
-
 async def add_avatar_image(user):
     # Upload to Cloudinary
     # file_info = uploadImage(path_to_image)
@@ -121,3 +118,6 @@ async def add_generic_avatar(user):
     await user.save()
 
     return True
+
+    
+    

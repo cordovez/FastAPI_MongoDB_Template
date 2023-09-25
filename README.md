@@ -172,6 +172,58 @@ which then allows us to simply type (if you have activated your virtual env):
 python -m server
 ```
 
-### Understanding Authentication
+### The Routes / Functions relationship:
+
+Routes are organised inside 'routes' folder in one file per path, so all CRUD routes for path `/users/...` are in the file `user_routes.py`.
+
+Each route may call one or more function. The functions for each of these routes are in 'controllers'.
+
+### How do I register a new user:
+
+The first post route in the api, `/users/add` simply takes a json body request with email, username, and password. You can try this out by editing the [request body here](http://127.0.0.1:8000/docs#/) (once you have launched the server).
+
+This route calls the function `create_user` which in addition to saving the name an email, and adding a default avatar for fun, it also creates a hashed_version of the password, which is used for authentication.
+
+Most routes require that a user be authenticated in order to be granted authorisation to visit a route.
+
+### How does authentication work?
+
+Authentication/authorisation functions are not passed in the body of the route function the same way other functions (controllers) are like the `create_user()` for example.
+
+Instead one function, `get_current_user` is passed as a dependency parameter, like this ... `Depends(get_current_user)]`. The complete function looks like this:
+
+```py
+@user_route.get("/all")
+async def read_all_users(current_user: Annotated[UserBase, Depends(get_current_user)])->list[UserBase]:
+```
+
+### What does `get_current_user` do?
+
+This function is the entry point for handling authentication. Just like the route has this dependency, `get_current_user` itself also has a dependency, it needs `OAuth2PasswordBearer(tokenUrl="token")`.
+
+Basically the OAuth2 authentication schema describes the type of authentication needed and where it will be looking for a response from a route: `/token`. The response from this rout is a "token".
+
+- This token is decoded: `payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])`
+- The username retrieved: `username: str = payload.get("sub")`
+- and the user data retrieved with: `get_user_by_username(username=token_data.username)`
+
+### What about the `get_current_active_user()`?
+
+This function adds another layer of authorisation. It uses `get_current_user()` to locate the user and if the User has a key "disabled" = False, then the user data is accessible.
+
+So the user data is only accessible if the user exists, was correctly authenticated, and is active.
+
+### But how do I get a token?
+
+When a user signs in (the `/token` route), the api expects a form-data request with username and password. That information is passed to the `authenticate_user()` function.
+
+This function does two things:
+
+- It verifies that the user is in the database with `get_user_by_username()`, and if it is,
+- it verifies the password with `verify_password()`
+
+The second function uses a cryptography library to compare the password passed in the login process, with the hashed_password that was created when the user registered.
+
+If the credentials match, then the route creates a token with a username, and an expiration time encrypted in the token. The endpoint returns this as a JSON object with `token_type` and `access_token` keys. These keys are a mandatory format of the OAuth scheme.
 
 </details>
