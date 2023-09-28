@@ -1,6 +1,8 @@
 from fastapi.encoders import jsonable_encoder
 from fastapi import HTTPException, status
 
+from beanie import UpdateResponse
+
 from models.user_model import UserIn, UserBase
 from models.message_models import Message
 from auth.password_hasher import get_password_hash
@@ -71,20 +73,23 @@ async def get_users():
     return all_users
 
 
-async def update_user_data( id, user_update_data):
+async def update_user_data( user_update_data, current_user):
+    """ function updates the current_user with the data passed in the
+    user_update_data object. 
+    """
     update_data = user_update_data.dict(exclude_unset=True)
-    found_user = await UserBase.get(id)
+    # found_user = await UserBase.get(current_user.id)
+    # found_user = await UserBase.find_one(UserBase.username == current_user.username)
     
-    # duplicate_user =  found_user.copy(update=update_data, exclude={"_id"})
-    updated_user = await found_user.update({"$set": update_data})
+    altered_document = await (UserBase.find_one(UserBase.username ==
+                                                current_user.username).update(
+                                                    {"$set": update_data},
+                                               response_type=UpdateResponse.UPDATE_RESULT))
     
-    # # updated_item = user.copy(update=update_data, exclude={"id"})
-    # updated_to_json = jsonable_encoder(updated_user)
-
-    # await found_user.set({**updated_to_json})
-    return found_user
-
-    # return True
+    # await altered_document.save()
+    # updated_document = UserBase.get(altered_document.id)
+    
+    return altered_document
 
 
 async def delete_user_by_id(id: str):

@@ -5,7 +5,7 @@ User registration router
 from fastapi import APIRouter, Depends 
 from typing import Annotated
 from fastapi.security import OAuth2PasswordBearer
-
+from beanie import UpdateResponse
 from auth.current_user import get_current_user
 from models.user_model import UserBase, UserIn, UserUpdate, UserOut
 from models.message_models import Message
@@ -64,13 +64,13 @@ async def get_my_things(current_user: Annotated[UserBase,
    return user.things    
 
 # Update
-@user_route.patch("/{id}/update")
-async def update_user(id,
+@user_route.patch("/update")
+async def update_user(
     update_data: UserUpdate,
-    current_user: Annotated[UserBase, Depends(get_current_user)],
-) :
+    current_user: Annotated[UserBase, Depends(get_current_user)]
+) ->UserBase:
     
-    updated_this = await update_user_data(id, update_data )
+    updated_this = await update_user_data( update_data, current_user )
     return updated_this
     
     
