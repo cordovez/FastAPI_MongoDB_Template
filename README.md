@@ -12,7 +12,7 @@ If you are in a hurry and know what you're doing:
 - git init
 - create a virtual environment using Python 3.11
 - `pip install -r requirements.txt` from your terminal
-- change the name of the file .fake.env to .env
+- change the name of the file fake.env to .env
 - insert the values needed in the .env file
 - run `python -m server` from your terminal
 - visit your localhost
