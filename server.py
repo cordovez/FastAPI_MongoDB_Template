@@ -16,24 +16,28 @@ origins = [
     "http://localhost:8000",
 ]
 
-app.add_middleware(CORSMiddleware, 
-                   allow_origins= origins, 
-                   allow_credentials = True, 
-                   allow_methods=["*"], 
-                   allow_headers=["*"], )
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/", tags=["root"])
 def root() -> Message:
-    """ Route is point of entry and publicly accessible
-    """
-    welcome_message = Message(message="""Welcome to my FastApi boilerplate api. To view and use the routes, add '/docs' to the path that brought you to this page.""")
+    """Route is point of entry and publicly accessible"""
+    welcome_message = Message(
+        message="""Welcome to my FastApi boilerplate api. To view and use the routes, add '/docs' to the path that brought you to this page."""
+    )
     return welcome_message
+
 
 app.include_router(user_route, prefix="/users", tags=["users"])
 app.include_router(token_route, tags=["token"])
 app.include_router(thing_route, tags=["things"])
+
 
 @app.on_event("startup")
 async def connect():

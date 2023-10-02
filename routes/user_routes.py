@@ -55,10 +55,6 @@ async def read_user_me( current_user: Annotated[UserBase,
 @user_route.get("/my_things")
 async def get_my_things(current_user: Annotated[UserBase, 
                                                    Depends(get_current_user)]):
-#    list_of_things =[]
-#    for thing in current_user.things:
-#        found = await MyThing.find_all({thing.owner == current_user.username})
-#        await list_of_things.append(found.thing_name)
     
    user = await UserBase.get(str(current_user.id), fetch_links=True)
    return user.things    
