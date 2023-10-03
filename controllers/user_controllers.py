@@ -122,7 +122,9 @@ async def update_user_data(user_update_data, current_user):
 
     user = await UserBase.get(current_user.id)
 
-    user.update({"$set": update_data}, response_type=UpdateResponse.UPDATE_RESULT)
+    await UserBase.find_one(UserBase.id == current_user.id).update(
+        {"$set": update_data}, response_type=UpdateResponse.UPDATE_RESULT
+    )
 
     return user
 
