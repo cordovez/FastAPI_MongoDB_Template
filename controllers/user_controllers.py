@@ -120,13 +120,11 @@ async def update_user_data(user_update_data, current_user):
     """
     update_data = user_update_data.dict(exclude_unset=True)
 
-    user = await UserBase.get(current_user.id)
-
     await UserBase.find_one(UserBase.id == current_user.id).update(
-        {"$set": update_data}, response_type=UpdateResponse.UPDATE_RESULT
+        {"$set": update_data}
     )
-
-    return user
+    updated_user = await UserBase.get(current_user.id)
+    return updated_user
 
 
 async def delete_user_by_id(id: str):
