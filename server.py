@@ -5,7 +5,6 @@ import uvicorn
 from mongodb.db import init_db
 from routes.user_routes import user_route
 from routes.token_route import token_route
-from routes.thing_routes import thing_route
 from models.message_models import Message
 
 
@@ -36,7 +35,6 @@ def root() -> Message:
 
 app.include_router(user_route, prefix="/user", tags=["users"])
 app.include_router(token_route, tags=["token"])
-app.include_router(thing_route, tags=["things"])
 
 
 @app.on_event("startup")
