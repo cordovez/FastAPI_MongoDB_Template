@@ -9,15 +9,16 @@ from beanie import UpdateResponse
 from auth.current_user import get_current_user
 from models.user_model import UserBase, UserIn, UserUpdate, UserOut
 from models.message_models import Message
-from models.thing_model import MyThing
-from controllers.user_controllers import (create_user, get_users, get_user,
-                                          delete_user_by_id, update_user_data)
+from models.thing_model import MyThing, MyThingIn, MyThingOut
+from controllers.user_controllers import (create_user, get_users, 
+                                          add_something_to_user, delete_user_by_id, 
+                                          update_user_data)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 user_route = APIRouter()
 # Create
-@user_route.post("/add")
+@user_route.post("/register")
 async def add_user_to_db( user: UserIn)-> UserOut:
     """To create a new user, you only need to pass in email, username, and
     password (model: UserIn).
@@ -30,6 +31,13 @@ async def add_user_to_db( user: UserIn)-> UserOut:
     new_user = await create_user(user)
     
     return new_user
+
+@user_route.post("/add_thing")
+async def add_something(thing: MyThingIn , current_user: Annotated[UserBase, 
+                                                 Depends(get_current_user)]):
+    result = await add_something_to_user(thing, current_user)
+    return result
+
 
 # Read
 @user_route.get("/all")

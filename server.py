@@ -34,7 +34,7 @@ def root() -> Message:
     return welcome_message
 
 
-app.include_router(user_route, prefix="/users", tags=["users"])
+app.include_router(user_route, prefix="/user", tags=["users"])
 app.include_router(token_route, tags=["token"])
 app.include_router(thing_route, tags=["things"])
 

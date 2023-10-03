@@ -4,6 +4,7 @@ from fastapi import HTTPException, status
 from beanie import UpdateResponse
 
 from models.user_model import UserIn, UserBase
+from models.thing_model import MyThing
 from models.message_models import Message
 from auth.password_hasher import get_password_hash
 
@@ -32,7 +33,32 @@ async def create_user( user: UserIn):
     saved_user = await UserBase.create(with_added_information)
     return saved_user
 
-
+async def add_something_to_user(thing, user):
+    # Make a new thing instance
+    new_thing = MyThing( thing_name=thing.thing_name, owner=user.username,category=thing.category)
+    await MyThing.create(new_thing)
+   
+    # Get all the Thing document with fetch_links
+    reveal_user_things = await UserBase.get(user.id, fetch_links=True)   
+    user_things = reveal_user_things.things
+    
+    # Get the names of the things the user has already  
+    user_things_names = []    
+    if user_things is not None:
+        for existing in user_things:
+            user_things_names.append(existing.thing_name)
+    
+    
+    # Verify that the new thing  does not exist already
+    if new_thing.thing_name in user_things_names:
+        raise HTTPException(
+        status.HTTP_409_CONFLICT, detail="That thing already exists"
+    )
+    
+    user.things.append(new_thing)
+    await user.save()
+    return user.things
+    
 def add_params(user_in: UserIn):
     """This function, takes the information passed in from 'create_user' and 
     additionally generates:
