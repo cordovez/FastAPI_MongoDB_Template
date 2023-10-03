@@ -14,6 +14,8 @@ async def create_user( user: UserIn):
     
     if user doesn't already exist, it takes this information information and 
     passes it to the to the add_params() function.
+    
+    It creates a new user.
     """
 
     user_email = await UserBase.find_one({"email": user.email})
@@ -33,7 +35,37 @@ async def create_user( user: UserIn):
     saved_user = await UserBase.create(with_added_information)
     return saved_user
 
+def add_params(user_in: UserIn):
+    """This function, takes the information passed in from 'create_user' and 
+    additionally generates:
+    • hashed_password
+    • uri to a generic avatar image
+    
+    It creates a user_dict excluding the password passed through 'UserIn' and 
+    register the new user.
+    
+    """
+    hashed_password = get_password_hash(user_in.password)
+    user_dict = user_in.dict(exclude={"password"})
+    
+    user_name = user_dict["username"]
+    uri = f"https://api.multiavatar.com/{user_name}.png"
+    avatar_dict = {"public_id": None, "uri": uri}
+    user = UserBase(
+        email=user_dict["email"],
+        username=user_dict["username"],
+        password_hash=hashed_password,
+        avatar=avatar_dict
+    )
+    return user
+
 async def add_something_to_user(thing, user):
+    """ Function takes in a "thing" of type MyThingIn, and a "user" which is the
+    "current_user" dependency.
+    
+    It creates a new instance of "thing", saves it, then appends it to the list
+    of things owned by the user.
+    """
     # Make a new thing instance
     new_thing = MyThing( thing_name=thing.thing_name, owner=user.username,category=thing.category)
     await MyThing.create(new_thing)
@@ -59,32 +91,11 @@ async def add_something_to_user(thing, user):
     await user.save()
     return user.things
     
-def add_params(user_in: UserIn):
-    """This function, takes the information passed in from 'create_user' and 
-    additionally generates:
-    • hashed_password
-    • uri to a generic avatar image
-    
-    It creates a user_dict excluding the password passed through 'UserIn' and 
-    register the new user.
-    
-    """
-    hashed_password = get_password_hash(user_in.password)
-    user_dict = user_in.dict(exclude={"password"})
-    
-    user_name = user_dict["username"]
-    uri = f"https://api.multiavatar.com/{user_name}.png"
-    avatar_dict = {"public_id": None, "uri": uri}
-    user = UserBase(
-        email=user_dict["email"],
-        username=user_dict["username"],
-        password_hash=hashed_password,
-        avatar=avatar_dict
-    )
-    return user
   
 async def get_user(id: str):
     """ function takes the MongoDB document _id as a string, to search database.
+    It has not yet been implemented. It should be limited to a user with "admin"
+    privileges.
     """
     found = await UserBase.get(id)
     if not found:
@@ -94,6 +105,7 @@ async def get_user(id: str):
 
 async def get_users():
     """ function returns all users in the database as a list.
+    Note: this function should be limited to a user with "admin" privileges
     """
     all_users = await UserBase.find().to_list()
     return all_users
@@ -104,16 +116,12 @@ async def update_user_data( user_update_data, current_user):
     user_update_data object. 
     """
     update_data = user_update_data.dict(exclude_unset=True)
-    # found_user = await UserBase.get(current_user.id)
-    # found_user = await UserBase.find_one(UserBase.username == current_user.username)
     
     altered_document = await (UserBase.find_one(UserBase.username ==
                                                 current_user.username).update(
                                                     {"$set": update_data},
                                                response_type=UpdateResponse.UPDATE_RESULT))
     
-    # await altered_document.save()
-    # updated_document = UserBase.get(altered_document.id)
     
     return altered_document
 
@@ -121,6 +129,9 @@ async def update_user_data( user_update_data, current_user):
 async def delete_user_by_id(id: str):
     """ function takes the MongoDB document _id as a string, to search database
     for document and delete it.
+    
+    Note: this function should be limited to a user with "admin" privileges
+
     """
     success_message = Message(message="user deleted")
     user_found = await UserBase.get(id)
@@ -130,25 +141,7 @@ async def delete_user_by_id(id: str):
     await user_found.delete()
     return success_message
     
-    
-async def add_avatar_image(user):
-    # Upload to Cloudinary
-    # file_info = uploadImage(path_to_image)
-    user = await UserBase.get(user.id)
-    
-    await user.save()
 
-    return True
-
-async def add_generic_avatar(user):
-    """Function to automatically add a generic avatar on new user create"""
-
-    user = await UserBase.get(user._id)
-    user.avatar = "https://api.multiavatar.com/"+user.username+".png"
-
-    await user.save()
-
-    return True
 
     
     
