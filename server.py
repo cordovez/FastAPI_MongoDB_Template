@@ -28,7 +28,8 @@ app.add_middleware(
 def root() -> Message:
     """Route is point of entry and publicly accessible"""
     welcome_message = Message(
-        message="""Welcome to my FastApi boilerplate api. To view and use the routes, add '/docs' to the path that brought you to this page."""
+        message="""Welcome to my FastApi boilerplate api. To view and use the routes, 
+        add '/docs' to the path that brought you to this page."""
     )
     return welcome_message
 
